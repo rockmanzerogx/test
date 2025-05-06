@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
 import os
 
 app = Flask(__name__)
+CORS(app)
 API_KEY = os.getenv("DEEPSEEK_API_KEY")  # Render inyectará esta variable
 API_URL = "https://api.deepseek.com/v1/chat/completions"
 
