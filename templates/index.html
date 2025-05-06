@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat con DeepSeek</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-box {
+            height: 400px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        #user-input {
+            width: 70%;
+            padding: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .user-msg { color: blue; }
+        .ai-msg { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Chatbot con DeepSeek API</h1>
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
+    <button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+
+        function addMessage(sender, message) {
+            const msgElement = document.createElement("div");
+            msgElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            msgElement.className = sender === "Tú" ? "user-msg" : "ai-msg";
+            chatBox.appendChild(msgElement);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage("Tú", message);
+            userInput.value = "";
+
+            try {
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+        });
+        
+        const data = await response.json();
+        
+        // Asegúrate de que la clave sea "response" (igual que en Flask)
+        if (data.response) {
+            addMessage("DeepSeek", data.response);
+        } else {
+            addMessage("Sistema", "La API no devolvió una respuesta válida.");
+            console.error("Data recibida:", data);  // 👀 Verifica en consola
+        }
+    } catch (error) {
+        addMessage("Sistema", "Error al conectar con la API.");
+        console.error("Error:", error);
+    }
+        }
+
+        // Permite enviar mensajes con "Enter"
+        userInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+</html>
